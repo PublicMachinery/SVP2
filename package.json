@@ -11,9 +11,11 @@
   "license": "MIT",
   "dependencies": {
     "camera-controls": "^2.2.1",
+    "mathjs": "^11.5.1",
     "three": "^0.149.0"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^24.0.1",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@types/dat.gui": "^0.7.7",
     "dat.gui": "^0.7.9",

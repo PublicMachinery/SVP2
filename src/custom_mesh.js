@@ -6,3 +6,16 @@ async function panels(){
 };
 export const panelsr =  await panels();
 
+async function pointsSortedObj(){
+    const response = fetch('./assets/pointsSorted.json');
+    return (await response).json()
+};
+
+export const pointsSorted= await pointsSortedObj();
+
+async function indexesSortedObj(){
+    const response = fetch('./assets/indexesSorted.json');
+    return (await response).json()
+};
+
+export const indexesSorted = await indexesSortedObj();
