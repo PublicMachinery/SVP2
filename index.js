@@ -1,82 +1,67 @@
-import { Vector2 } from "three";
-import {menu} from "./menu.js";
-//import { threeMesh } from "./three.js";
 import { customMesh } from "./three.js";
-//import { Buffer,Buffer2 } from "./Buffer_triangle.js";
+
 // Main structure
 
-const container = document.querySelector(".main-container")
-const header= document.createElement("div");
+const container = document.querySelector(".main-container");
+const header = document.createElement("div");
 header.className = "header";
 
-const appcontainer= document.createElement("div");
-appcontainer.className = "appcontainer"
+const appcontainer = document.createElement("div");
+appcontainer.className = "appcontainer";
 
+const rightbar = document.createElement("div");
+rightbar.className = "rightbar";
 
-const rightbar= document.createElement('div');
-rightbar.className = "rightbar"
+const viewer = document.createElement("div");
+viewer.className = "viewer";
 
-const viewer= document.createElement('div');
-viewer.className = "viewer"
+const divs = [header, appcontainer];
+const appelements = [viewer, rightbar];
 
-const menuC=menu;
-
-const divs= [header,appcontainer]
-const appelements = [viewer,rightbar]
-
-for (let element of divs){
-    container.appendChild(element);
+for (let element of divs) {
+  container.appendChild(element);
 }
 
-for (let element of appelements){
-    appcontainer.appendChild(element);
+for (let element of appelements) {
+  appcontainer.appendChild(element);
 }
 
-const title = document.createElement("h1")
-title.textContent = "GEOMETRY VIEWER 🔍"
+const title = document.createElement("h1");
+title.textContent = "GEOMETRY VIEWER 🔍";
 
-header.appendChild(title)
+header.appendChild(title);
 
 // three.js canvas
 
-const canvas= document.createElement("canvas");
-canvas.id="three-canvas";
-const gui = document.createElement('div');
+const canvas = document.createElement("canvas");
+canvas.id = "three-canvas";
+const gui = document.createElement("div");
 
-//  Spaces titles   
+//  Spaces titles
 
-const rightbarTitle=document.createElement("h3")
-rightbarTitle.textContent='Element Information'
+const rightbarTitle = document.createElement("h3");
+rightbarTitle.textContent = "Element Information";
 
-const viewertitle= document.createElement("h3")
-viewertitle.textContent='Geometry Analisis'
+const viewertitle = document.createElement("h3");
+viewertitle.textContent = "Geometry Analisis";
 
 viewer.appendChild(viewertitle);
 viewer.appendChild(canvas);
 viewer.appendChild(gui);
-rightbar.appendChild(rightbarTitle)
+rightbar.appendChild(rightbarTitle);
 
-
-viewer.addEventListener("mouseenter",()=>{
-    rightbar.style.backgroundColor = "yellow"
-})
-viewer.addEventListener("mouseout",()=>{
-    rightbar.style.backgroundColor = "aqua"
-})
+viewer.addEventListener("mouseenter", () => {
+  rightbar.style.backgroundColor = "yellow";
+});
+viewer.addEventListener("mouseout", () => {
+  rightbar.style.backgroundColor = "aqua";
+});
 
 gui.id = "three-gui";
-customMesh(canvas,gui);
-// Buffer2(canvas,gui);
+customMesh(canvas, gui);
 
-function loaded(){
-   canvas.style.width = 'auto';
-   const height = window.innerHeight;
-   canvas.style.height = `${height* 0.9}px`;
-   
-};
-window.addEventListener('load',loaded());
-
-
-
-
-
+function loaded() {
+  canvas.style.width = "auto";
+  const height = window.innerHeight;
+  canvas.style.height = `${height * 0.9}px`;
+}
