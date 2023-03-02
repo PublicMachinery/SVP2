@@ -36,7 +36,14 @@ import {
   TriangleStripDrawMode,
   Triangle,
   Object3D,
+  Uint32BufferAttribute,
+  Uint16BufferAttribute,
+  Float32BufferAttribute,
+  Float64BufferAttribute,
+  ShaderMaterial,
+
 } from "three";
+
 
 import CameraControls from "camera-controls";
 
@@ -55,6 +62,7 @@ const subsetOfTHREE = {
     DEG2RAD: MathUtils.DEG2RAD,
     clamp: MathUtils.clamp,
   },
+  
 };
 import { cross, index, norm, typeOf } from "mathjs";
 CameraControls.install({ THREE: subsetOfTHREE });
@@ -67,21 +75,7 @@ export function customMesh(canvas, guiCont) {
   const scene = new Scene();
   scene.background = null;
 
-  // the materials
-
-  const material = new MeshBasicMaterial({
-    color: 0x5f92b9,
-    polygonOffset: true,
-    polygonOffsetFactor: 1,
-    polygonOffsetUnits: 1,
-    side: 2,
-  });
-  const materialp = new MeshPhongMaterial({
-    color: 0x5f92b9,
-    shininess: 100,
-    flatShading: false,
-    side: 2,
-  });
+ 
 
   const edgesMaterial = new LineBasicMaterial({
     color: 0x000000,
@@ -93,32 +87,56 @@ export function customMesh(canvas, guiCont) {
   const flatcoordsc = [];
 
   for (let v of flatcoord) {
-    const sclcrd = v * 0.0001;
+    const sclcrd = v * 0.001;
     flatcoordsc.push(sclcrd);
   }
 
   const indexes = indexesSorted["indexes"];
 
-  //console.log(indexes);
+
+  const colorArray = []
+
+  for(let c in indexes){
+    const color = [255,200,0]
+    colorArray.push(color)
+  }
 
   // Arrays
-
-  const vertices = new Float32Array(flatcoordsc);
+  const flatColorArr= new Float32Array([].concat(...colorArray));
+  console.log(flatColorArr)
+ const vertices = new Float32Array(flatcoordsc);
+  //   vertices[flatcoordsc]
   // const normalArrray = new Float32Array(flatNormals)
-  const indexesArr = new Uint32Array(indexes);
-
+  const indexesArr = new Uint16Array(indexes);
+  //console.log(indexesArr)
   // Geometry
 
   const geometry = new BufferGeometry();
-  //geometry.setIndex(indexes)
-  geometry.setAttribute("position", new BufferAttribute(vertices, 3));
+ 
+  geometry.setAttribute("position", new Float32BufferAttribute(vertices,3));
+  geometry.setAttribute('color',new Float32BufferAttribute(flatColorArr,3))
   //geometry.setAttribute('normal', new BufferAttribute(normalArrray,3))
-  //geometry.setIndex( new BufferAttribute(indexesArr,1))
+  //geometry.setIndex( new Uint16BufferAttribute(indexesArr,1))
+  //geometry.setIndex(indexes)
+
+
+ // the materials
+
+  
+  const material = new MeshBasicMaterial({
+  // color: 0x5f92b9,
+  polygonOffset: true,
+  polygonOffsetFactor: 1,
+  polygonOffsetUnits: 1,
+  side: 2,
+  vertexColors : true ,
+ });
+
 
   const wireTriangle = new WireframeGeometry(geometry);
   const wireframe = new LineSegments(wireTriangle, edgesMaterial);
   const mesh = new Mesh(geometry, material);
-
+  ;
   scene.add(mesh);
   scene.add(wireframe);
 
@@ -182,13 +200,31 @@ export function customMesh(canvas, guiCont) {
 
   let previuousSelectedUuid;
 
-  window.addEventListener("pointermove", (event) => {
+  window.addEventListener('mousemove', (event) => {
     mouse.x = (event.clientX / canvas.clientWidth) * 2 - 1;
     mouse.y = -(event.clientY / canvas.clientHeight) * 2 + 1;
     rayCaster.setFromCamera(mouse, camera);
-    const intersects = rayCaster.intersectObject(mesh);
-    if (intersects) {
-      console.log(intersects[0].index);
+    
+    const intersects = rayCaster.intersectObject(mesh,true);
+    
+    
+    
+    if (intersects.length>0) {
+      //console.log(intersects[0].face.a,intersects[0].face.b,intersects[0].face.c);
+      const faceIndex= intersects[0].faceIndex;
+      const face = intersects[0].face
+      const x = face.a;
+      const y = face.b;
+      const z = face.c;
+      const collorAttribute = geometry.getAttribute('color');
+      collorAttribute.setXYZ(x,250,0,0);
+      collorAttribute.setXYZ(z,250,0,0);
+      collorAttribute.setXYZ(y,250,0,0);
+      collorAttribute.needsUpdate = true;
+      
+      console.log(face)
+      console.log(x)
+      
     }
   });
 
@@ -209,6 +245,7 @@ export function customMesh(canvas, guiCont) {
   cameraControls.dollyToCursor = true;
 
   //animtation
+
   const animate = () => {
     const detla = clock.getDelta();
     cameraControls.update(detla);

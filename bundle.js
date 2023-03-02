@@ -29454,120 +29454,6 @@ function isUniqueEdge( start, end, edges ) {
 
 }
 
-class MeshPhongMaterial extends Material {
-
-	constructor( parameters ) {
-
-		super();
-
-		this.isMeshPhongMaterial = true;
-
-		this.type = 'MeshPhongMaterial';
-
-		this.color = new Color( 0xffffff ); // diffuse
-		this.specular = new Color( 0x111111 );
-		this.shininess = 30;
-
-		this.map = null;
-
-		this.lightMap = null;
-		this.lightMapIntensity = 1.0;
-
-		this.aoMap = null;
-		this.aoMapIntensity = 1.0;
-
-		this.emissive = new Color( 0x000000 );
-		this.emissiveIntensity = 1.0;
-		this.emissiveMap = null;
-
-		this.bumpMap = null;
-		this.bumpScale = 1;
-
-		this.normalMap = null;
-		this.normalMapType = TangentSpaceNormalMap;
-		this.normalScale = new Vector2( 1, 1 );
-
-		this.displacementMap = null;
-		this.displacementScale = 1;
-		this.displacementBias = 0;
-
-		this.specularMap = null;
-
-		this.alphaMap = null;
-
-		this.envMap = null;
-		this.combine = MultiplyOperation;
-		this.reflectivity = 1;
-		this.refractionRatio = 0.98;
-
-		this.wireframe = false;
-		this.wireframeLinewidth = 1;
-		this.wireframeLinecap = 'round';
-		this.wireframeLinejoin = 'round';
-
-		this.flatShading = false;
-
-		this.fog = true;
-
-		this.setValues( parameters );
-
-	}
-
-	copy( source ) {
-
-		super.copy( source );
-
-		this.color.copy( source.color );
-		this.specular.copy( source.specular );
-		this.shininess = source.shininess;
-
-		this.map = source.map;
-
-		this.lightMap = source.lightMap;
-		this.lightMapIntensity = source.lightMapIntensity;
-
-		this.aoMap = source.aoMap;
-		this.aoMapIntensity = source.aoMapIntensity;
-
-		this.emissive.copy( source.emissive );
-		this.emissiveMap = source.emissiveMap;
-		this.emissiveIntensity = source.emissiveIntensity;
-
-		this.bumpMap = source.bumpMap;
-		this.bumpScale = source.bumpScale;
-
-		this.normalMap = source.normalMap;
-		this.normalMapType = source.normalMapType;
-		this.normalScale.copy( source.normalScale );
-
-		this.displacementMap = source.displacementMap;
-		this.displacementScale = source.displacementScale;
-		this.displacementBias = source.displacementBias;
-
-		this.specularMap = source.specularMap;
-
-		this.alphaMap = source.alphaMap;
-
-		this.envMap = source.envMap;
-		this.combine = source.combine;
-		this.reflectivity = source.reflectivity;
-		this.refractionRatio = source.refractionRatio;
-
-		this.wireframe = source.wireframe;
-		this.wireframeLinewidth = source.wireframeLinewidth;
-		this.wireframeLinecap = source.wireframeLinecap;
-		this.wireframeLinejoin = source.wireframeLinejoin;
-
-		this.flatShading = source.flatShading;
-
-		this.fog = source.fog;
-
-		return this;
-
-	}
-
-}
-
 class Light extends Object3D {
 
 	constructor( color, intensity = 1 ) {
@@ -32577,6 +32463,7 @@ const subsetOfTHREE = {
     DEG2RAD: MathUtils.DEG2RAD,
     clamp: MathUtils.clamp,
   },
+  
 };
 CameraControls.install({ THREE: subsetOfTHREE });
 
@@ -32586,21 +32473,7 @@ function customMesh(canvas, guiCont) {
   const scene = new Scene();
   scene.background = null;
 
-  // the materials
-
-  const material = new MeshBasicMaterial({
-    color: 0x5f92b9,
-    polygonOffset: true,
-    polygonOffsetFactor: 1,
-    polygonOffsetUnits: 1,
-    side: 2,
-  });
-  new MeshPhongMaterial({
-    color: 0x5f92b9,
-    shininess: 100,
-    flatShading: false,
-    side: 2,
-  });
+ 
 
   const edgesMaterial = new LineBasicMaterial({
     color: 0x000000,
@@ -32612,30 +32485,52 @@ function customMesh(canvas, guiCont) {
   const flatcoordsc = [];
 
   for (let v of flatcoord) {
-    const sclcrd = v * 0.0001;
+    const sclcrd = v * 0.001;
     flatcoordsc.push(sclcrd);
   }
 
-  indexesSorted["indexes"];
+  const indexes = indexesSorted["indexes"];
 
-  //console.log(indexes);
+
+  const colorArray = [];
+
+  for(let c in indexes){
+    const color = [255,200,0];
+    colorArray.push(color);
+  }
 
   // Arrays
-
-  const vertices = new Float32Array(flatcoordsc);
-
+  const flatColorArr= new Float32Array([].concat(...colorArray));
+  console.log(flatColorArr);
+ const vertices = new Float32Array(flatcoordsc);
+  //console.log(indexesArr)
   // Geometry
 
   const geometry = new BufferGeometry();
-  //geometry.setIndex(indexes)
-  geometry.setAttribute("position", new BufferAttribute(vertices, 3));
+ 
+  geometry.setAttribute("position", new Float32BufferAttribute(vertices,3));
+  geometry.setAttribute('color',new Float32BufferAttribute(flatColorArr,3));
   //geometry.setAttribute('normal', new BufferAttribute(normalArrray,3))
-  //geometry.setIndex( new BufferAttribute(indexesArr,1))
+  //geometry.setIndex( new Uint16BufferAttribute(indexesArr,1))
+  //geometry.setIndex(indexes)
+
+
+ // the materials
+
+  
+  const material = new MeshBasicMaterial({
+  // color: 0x5f92b9,
+  polygonOffset: true,
+  polygonOffsetFactor: 1,
+  polygonOffsetUnits: 1,
+  side: 2,
+  vertexColors : true ,
+ });
+
 
   const wireTriangle = new WireframeGeometry(geometry);
   const wireframe = new LineSegments(wireTriangle, edgesMaterial);
   const mesh = new Mesh(geometry, material);
-
   scene.add(mesh);
   scene.add(wireframe);
 
@@ -32697,13 +32592,31 @@ function customMesh(canvas, guiCont) {
   //const intersect = rayCaster.intersectObject(mesh);
   const mouse = new Vector2();
 
-  window.addEventListener("pointermove", (event) => {
+  window.addEventListener('mousemove', (event) => {
     mouse.x = (event.clientX / canvas.clientWidth) * 2 - 1;
     mouse.y = -(event.clientY / canvas.clientHeight) * 2 + 1;
     rayCaster.setFromCamera(mouse, camera);
-    const intersects = rayCaster.intersectObject(mesh);
-    if (intersects) {
-      console.log(intersects[0].index);
+    
+    const intersects = rayCaster.intersectObject(mesh,true);
+    
+    
+    
+    if (intersects.length>0) {
+      //console.log(intersects[0].face.a,intersects[0].face.b,intersects[0].face.c);
+      intersects[0].faceIndex;
+      const face = intersects[0].face;
+      const x = face.a;
+      const y = face.b;
+      const z = face.c;
+      const collorAttribute = geometry.getAttribute('color');
+      collorAttribute.setXYZ(x,250,0,0);
+      collorAttribute.setXYZ(z,250,0,0);
+      collorAttribute.setXYZ(y,250,0,0);
+      collorAttribute.needsUpdate = true;
+      
+      console.log(face);
+      console.log(x);
+      
     }
   });
 
@@ -32724,6 +32637,7 @@ function customMesh(canvas, guiCont) {
   cameraControls.dollyToCursor = true;
 
   //animtation
+
   const animate = () => {
     const detla = clock.getDelta();
     cameraControls.update(detla);
