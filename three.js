@@ -62,12 +62,15 @@ const subsetOfTHREE = {
     DEG2RAD: MathUtils.DEG2RAD,
     clamp: MathUtils.clamp,
   },
-  
+
 };
+
+
 import { cross, index, norm, typeOf } from "mathjs";
 CameraControls.install({ THREE: subsetOfTHREE });
 import GUI from "three/examples/jsm/libs/lil-gui.module.min.js";
 import { panelsr, pointsSorted, indexesSorted } from "./src/custom_mesh";
+import {CSS2DRenderer,CSS2DObject} from 'three/examples/jsm/renderers/CSS2DRenderer.js'
 
 export function customMesh(canvas, guiCont) {
   // Scene
@@ -75,7 +78,7 @@ export function customMesh(canvas, guiCont) {
   const scene = new Scene();
   scene.background = null;
 
- 
+
 
   const edgesMaterial = new LineBasicMaterial({
     color: 0x000000,
@@ -87,42 +90,49 @@ export function customMesh(canvas, guiCont) {
   const flatcoordsc = [];
 
   for (let v of flatcoord) {
-    const sclcrd = v * 0.001;
+    const sclcrd = v * 0.0001;
     flatcoordsc.push(sclcrd);
   }
 
   const indexes = indexesSorted["indexes"];
 
-
   const colorArray = []
 
   for(let c in indexes){
-    const color = [255,200,0]
+    const color = [85,213,83]
     colorArray.push(color)
   }
 
   // Arrays
   const flatColorArr= new Float32Array([].concat(...colorArray));
-  console.log(flatColorArr)
- const vertices = new Float32Array(flatcoordsc);
+
+  const vertices = new Float32Array(flatcoordsc);
   //   vertices[flatcoordsc]
   // const normalArrray = new Float32Array(flatNormals)
   const indexesArr = new Uint16Array(indexes);
   //console.log(indexesArr)
+
+  // Labels
+
+  // const label = document.createElement('h3');
+  // label.textContent='Hello world';
+  // const labelObject = new CSS2DObject(label);
+  // scene.add(labelObject)
+
+
   // Geometry
 
   const geometry = new BufferGeometry();
- 
+
   geometry.setAttribute("position", new Float32BufferAttribute(vertices,3));
   geometry.setAttribute('color',new Float32BufferAttribute(flatColorArr,3))
   //geometry.setAttribute('normal', new BufferAttribute(normalArrray,3))
   //geometry.setIndex( new Uint16BufferAttribute(indexesArr,1))
   //geometry.setIndex(indexes)
 
-
  // the materials
 
-  
+
   const material = new MeshBasicMaterial({
   // color: 0x5f92b9,
   polygonOffset: true,
@@ -149,6 +159,7 @@ export function customMesh(canvas, guiCont) {
   grid.renderOrder = 1;
   scene.add(axes);
   scene.add(grid);
+
 
   // GUI
 
@@ -192,47 +203,111 @@ export function customMesh(canvas, guiCont) {
   camera.lookAt(new Vector3(0, 0, 0));
   scene.add(camera);
 
-  // Raycaster
+
+
+  // Raycaster picking
 
   const rayCaster = new Raycaster();
   //const intersect = rayCaster.intersectObject(mesh);
   const mouse = new Vector2();
 
-  let previuousSelectedUuid;
+  const previousSelection = {
+    index : null,
+    face : null,
+    location : null,
+  }
+
+
+  // function onMouseMove(){
+  //   let firstCollision;
+  //   return function(event){
+  //     console.log(firstCollision)
+  //   }
+  // }
+  let firstCollision;
+
+  const collision = [];
+  const lableArray = [];
 
   window.addEventListener('mousemove', (event) => {
     mouse.x = (event.clientX / canvas.clientWidth) * 2 - 1;
-    mouse.y = -(event.clientY / canvas.clientHeight) * 2 + 1;
+    mouse.y = -(event.clientY/ canvas.clientHeight) * 2 + 1;
     rayCaster.setFromCamera(mouse, camera);
+
+    const intersects = rayCaster.intersectObject(mesh);
+    const hasCollided = intersects.length !== 0;
+
+    const label = document.createElement('p');
+    label.className='label'
+    const labelObject = new CSS2DObject(label);
+    lableArray.push(labelObject);
     
-    const intersects = rayCaster.intersectObject(mesh,true);
+    if(!hasCollided){
+      previousSelection.index = null;
+      previousSelection.face = null;
+      previousSelection.location = null;
+      geometry.setAttribute('color',new Float32BufferAttribute(flatColorArr,3))
+      labelObject.removeFromParent;
+      label.id = 'hidden-label';
+      //const labelPrev= (document.getElementsByClassName('label'));
+      for(let l of lableArray){
+        l.removeFromParent();
+      };
+      lableArray.length =0;
+      return;
+    };
     
+    firstCollision = intersects[0].faceIndex;
+    collision.push(firstCollision)
     
-    
-    if (intersects.length>0) {
-      //console.log(intersects[0].face.a,intersects[0].face.b,intersects[0].face.c);
-      const faceIndex= intersects[0].faceIndex;
-      const face = intersects[0].face
-      const x = face.a;
-      const y = face.b;
-      const z = face.c;
-      const collorAttribute = geometry.getAttribute('color');
-      collorAttribute.setXYZ(x,250,0,0);
-      collorAttribute.setXYZ(z,250,0,0);
-      collorAttribute.setXYZ(y,250,0,0);
-      collorAttribute.needsUpdate = true;
+    if(collision.length >1){
+      const isPrevious = firstCollision in collision; 
+      for(let l of lableArray){
+        l.removeFromParent();
+      };
+      if(!isPrevious){
+        geometry.setAttribute('color',new Float32BufferAttribute(flatColorArr,3));
+      }
+      collision.length=0;
+    };
       
-      console.log(face)
-      console.log(x)
-      
+  
+
+    previousSelection.location = intersects[0].point;
+    previousSelection.index =  intersects[0].faceIndex;
+    previousSelection.face = intersects[0].face;
+    const face = previousSelection.face;
+    const x = face.a;
+    const y = face.b;
+    const z = face.c;
+    const collorAttribute = geometry.getAttribute('color');
+    collorAttribute.setXYZ(x,250,0,0);
+    collorAttribute.setXYZ(y,250,0,0);
+    collorAttribute.setXYZ(z,250,0,0);
+    collorAttribute.needsUpdate = true;
+
+    // //debugger;
+    label.textContent = `this is panel ${firstCollision}`;
+    const location = previousSelection.location;
+  
+    if(lableArray.length > 1){
+      console.log(lableArray)
+      labelObject.position.copy(location);
+      const currentLabel=lableArray[(lableArray.length-1)];
+      currentLabel.position.copy(location);
+      scene.add(currentLabel);
     }
+    
+    
   });
 
   //the renderer
 
   const renderer = new WebGLRenderer({ canvas: canvas });
 
+
   renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+  // renderer.setSize(window.screen.width,window.screen.height, false);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0xffffff, 1);
   //renderer.render(scene,camera);
@@ -244,12 +319,27 @@ export function customMesh(canvas, guiCont) {
 
   cameraControls.dollyToCursor = true;
 
+  const labelRenderer= new CSS2DRenderer();
+  
+  labelRenderer.setSize(canvas.clientWidth,canvas.clientHeight);
+  labelRenderer.domElement.style.position = 'absolute';
+  labelRenderer.domElement.style.pointerEvents = 'none' ;
+  labelRenderer.domElement.style.top = '0';
+
+  document.body.appendChild(labelRenderer.domElement)
+
+
+
+  // pickint
+
+
   //animtation
 
   const animate = () => {
     const detla = clock.getDelta();
     cameraControls.update(detla);
     renderer.render(scene, camera);
+    labelRenderer.render(scene,camera);
     requestAnimationFrame(animate);
   };
 
@@ -259,5 +349,6 @@ export function customMesh(canvas, guiCont) {
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+    labelRenderer.setSize(canvas.clientWidth, canvas.clientHeight)
   });
 }

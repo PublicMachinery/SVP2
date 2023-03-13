@@ -32448,6 +32448,209 @@ async function indexesSortedObj(){
 }
 const indexesSorted = await indexesSortedObj();
 
+class CSS2DObject extends Object3D {
+
+	constructor( element = document.createElement( 'div' ) ) {
+
+		super();
+
+		this.isCSS2DObject = true;
+
+		this.element = element;
+
+		this.element.style.position = 'absolute';
+		this.element.style.userSelect = 'none';
+
+		this.element.setAttribute( 'draggable', false );
+
+		this.addEventListener( 'removed', function () {
+
+			this.traverse( function ( object ) {
+
+				if ( object.element instanceof Element && object.element.parentNode !== null ) {
+
+					object.element.parentNode.removeChild( object.element );
+
+				}
+
+			} );
+
+		} );
+
+	}
+
+	copy( source, recursive ) {
+
+		super.copy( source, recursive );
+
+		this.element = source.element.cloneNode( true );
+
+		return this;
+
+	}
+
+}
+
+//
+
+const _vector = new Vector3();
+const _viewMatrix = new Matrix4();
+const _viewProjectionMatrix = new Matrix4();
+const _a = new Vector3();
+const _b = new Vector3();
+
+class CSS2DRenderer {
+
+	constructor( parameters = {} ) {
+
+		const _this = this;
+
+		let _width, _height;
+		let _widthHalf, _heightHalf;
+
+		const cache = {
+			objects: new WeakMap()
+		};
+
+		const domElement = parameters.element !== undefined ? parameters.element : document.createElement( 'div' );
+
+		domElement.style.overflow = 'hidden';
+
+		this.domElement = domElement;
+
+		this.getSize = function () {
+
+			return {
+				width: _width,
+				height: _height
+			};
+
+		};
+
+		this.render = function ( scene, camera ) {
+
+			if ( scene.matrixWorldAutoUpdate === true ) scene.updateMatrixWorld();
+			if ( camera.parent === null && camera.matrixWorldAutoUpdate === true ) camera.updateMatrixWorld();
+
+			_viewMatrix.copy( camera.matrixWorldInverse );
+			_viewProjectionMatrix.multiplyMatrices( camera.projectionMatrix, _viewMatrix );
+
+			renderObject( scene, scene, camera );
+			zOrder( scene );
+
+		};
+
+		this.setSize = function ( width, height ) {
+
+			_width = width;
+			_height = height;
+
+			_widthHalf = _width / 2;
+			_heightHalf = _height / 2;
+
+			domElement.style.width = width + 'px';
+			domElement.style.height = height + 'px';
+
+		};
+
+		function renderObject( object, scene, camera ) {
+
+			if ( object.isCSS2DObject ) {
+
+				_vector.setFromMatrixPosition( object.matrixWorld );
+				_vector.applyMatrix4( _viewProjectionMatrix );
+
+				const visible = ( object.visible === true ) && ( _vector.z >= - 1 && _vector.z <= 1 ) && ( object.layers.test( camera.layers ) === true );
+				object.element.style.display = ( visible === true ) ? '' : 'none';
+
+				if ( visible === true ) {
+
+					object.onBeforeRender( _this, scene, camera );
+
+					const element = object.element;
+
+					element.style.transform = 'translate(-50%,-50%) translate(' + ( _vector.x * _widthHalf + _widthHalf ) + 'px,' + ( - _vector.y * _heightHalf + _heightHalf ) + 'px)';
+
+					if ( element.parentNode !== domElement ) {
+
+						domElement.appendChild( element );
+
+					}
+
+					object.onAfterRender( _this, scene, camera );
+
+				}
+
+				const objectData = {
+					distanceToCameraSquared: getDistanceToSquared( camera, object )
+				};
+
+				cache.objects.set( object, objectData );
+
+			}
+
+			for ( let i = 0, l = object.children.length; i < l; i ++ ) {
+
+				renderObject( object.children[ i ], scene, camera );
+
+			}
+
+		}
+
+		function getDistanceToSquared( object1, object2 ) {
+
+			_a.setFromMatrixPosition( object1.matrixWorld );
+			_b.setFromMatrixPosition( object2.matrixWorld );
+
+			return _a.distanceToSquared( _b );
+
+		}
+
+		function filterAndFlatten( scene ) {
+
+			const result = [];
+
+			scene.traverse( function ( object ) {
+
+				if ( object.isCSS2DObject ) result.push( object );
+
+			} );
+
+			return result;
+
+		}
+
+		function zOrder( scene ) {
+
+			const sorted = filterAndFlatten( scene ).sort( function ( a, b ) {
+
+				if ( a.renderOrder !== b.renderOrder ) {
+
+					return b.renderOrder - a.renderOrder;
+
+				}
+
+				const distanceA = cache.objects.get( a ).distanceToCameraSquared;
+				const distanceB = cache.objects.get( b ).distanceToCameraSquared;
+
+				return distanceA - distanceB;
+
+			} );
+
+			const zMax = sorted.length;
+
+			for ( let i = 0, l = sorted.length; i < l; i ++ ) {
+
+				sorted[ i ].element.style.zIndex = zMax - i;
+
+			}
+
+		}
+
+	}
+
+}
+
 const subsetOfTHREE = {
   MOUSE,
   Vector2,
@@ -32463,7 +32666,7 @@ const subsetOfTHREE = {
     DEG2RAD: MathUtils.DEG2RAD,
     clamp: MathUtils.clamp,
   },
-  
+
 };
 CameraControls.install({ THREE: subsetOfTHREE });
 
@@ -32473,7 +32676,7 @@ function customMesh(canvas, guiCont) {
   const scene = new Scene();
   scene.background = null;
 
- 
+
 
   const edgesMaterial = new LineBasicMaterial({
     color: 0x000000,
@@ -32485,39 +32688,46 @@ function customMesh(canvas, guiCont) {
   const flatcoordsc = [];
 
   for (let v of flatcoord) {
-    const sclcrd = v * 0.001;
+    const sclcrd = v * 0.0001;
     flatcoordsc.push(sclcrd);
   }
 
   const indexes = indexesSorted["indexes"];
 
-
   const colorArray = [];
 
   for(let c in indexes){
-    const color = [255,200,0];
+    const color = [85,213,83];
     colorArray.push(color);
   }
 
   // Arrays
   const flatColorArr= new Float32Array([].concat(...colorArray));
-  console.log(flatColorArr);
- const vertices = new Float32Array(flatcoordsc);
+
+  const vertices = new Float32Array(flatcoordsc);
   //console.log(indexesArr)
+
+  // Labels
+
+  // const label = document.createElement('h3');
+  // label.textContent='Hello world';
+  // const labelObject = new CSS2DObject(label);
+  // scene.add(labelObject)
+
+
   // Geometry
 
   const geometry = new BufferGeometry();
- 
+
   geometry.setAttribute("position", new Float32BufferAttribute(vertices,3));
   geometry.setAttribute('color',new Float32BufferAttribute(flatColorArr,3));
   //geometry.setAttribute('normal', new BufferAttribute(normalArrray,3))
   //geometry.setIndex( new Uint16BufferAttribute(indexesArr,1))
   //geometry.setIndex(indexes)
 
-
  // the materials
 
-  
+
   const material = new MeshBasicMaterial({
   // color: 0x5f92b9,
   polygonOffset: true,
@@ -32543,6 +32753,7 @@ function customMesh(canvas, guiCont) {
   grid.renderOrder = 1;
   scene.add(axes);
   scene.add(grid);
+
 
   // GUI
 
@@ -32586,45 +32797,107 @@ function customMesh(canvas, guiCont) {
   camera.lookAt(new Vector3(0, 0, 0));
   scene.add(camera);
 
-  // Raycaster
+
+
+  // Raycaster picking
 
   const rayCaster = new Raycaster();
   //const intersect = rayCaster.intersectObject(mesh);
   const mouse = new Vector2();
 
+  const previousSelection = {
+    index : null,
+    face : null,
+    location : null,
+  };
+
+
+  // function onMouseMove(){
+  //   let firstCollision;
+  //   return function(event){
+  //     console.log(firstCollision)
+  //   }
+  // }
+  let firstCollision;
+
+  const collision = [];
+  const lableArray = [];
+
   window.addEventListener('mousemove', (event) => {
     mouse.x = (event.clientX / canvas.clientWidth) * 2 - 1;
-    mouse.y = -(event.clientY / canvas.clientHeight) * 2 + 1;
+    mouse.y = -(event.clientY/ canvas.clientHeight) * 2 + 1;
     rayCaster.setFromCamera(mouse, camera);
+
+    const intersects = rayCaster.intersectObject(mesh);
+    const hasCollided = intersects.length !== 0;
+
+    const label = document.createElement('p');
+    label.className='label';
+    const labelObject = new CSS2DObject(label);
+    lableArray.push(labelObject);
     
-    const intersects = rayCaster.intersectObject(mesh,true);
+    if(!hasCollided){
+      previousSelection.index = null;
+      previousSelection.face = null;
+      previousSelection.location = null;
+      geometry.setAttribute('color',new Float32BufferAttribute(flatColorArr,3));
+      labelObject.removeFromParent;
+      label.id = 'hidden-label';
+      //const labelPrev= (document.getElementsByClassName('label'));
+      for(let l of lableArray){
+        l.removeFromParent();
+      }      lableArray.length =0;
+      return;
+    }    
+    firstCollision = intersects[0].faceIndex;
+    collision.push(firstCollision);
     
-    
-    
-    if (intersects.length>0) {
-      //console.log(intersects[0].face.a,intersects[0].face.b,intersects[0].face.c);
-      intersects[0].faceIndex;
-      const face = intersects[0].face;
-      const x = face.a;
-      const y = face.b;
-      const z = face.c;
-      const collorAttribute = geometry.getAttribute('color');
-      collorAttribute.setXYZ(x,250,0,0);
-      collorAttribute.setXYZ(z,250,0,0);
-      collorAttribute.setXYZ(y,250,0,0);
-      collorAttribute.needsUpdate = true;
-      
-      console.log(face);
-      console.log(x);
-      
+    if(collision.length >1){
+      const isPrevious = firstCollision in collision; 
+      for(let l of lableArray){
+        l.removeFromParent();
+      }      if(!isPrevious){
+        geometry.setAttribute('color',new Float32BufferAttribute(flatColorArr,3));
+      }
+      collision.length=0;
+    }      
+  
+
+    previousSelection.location = intersects[0].point;
+    previousSelection.index =  intersects[0].faceIndex;
+    previousSelection.face = intersects[0].face;
+    const face = previousSelection.face;
+    const x = face.a;
+    const y = face.b;
+    const z = face.c;
+    const collorAttribute = geometry.getAttribute('color');
+    collorAttribute.setXYZ(x,250,0,0);
+    collorAttribute.setXYZ(y,250,0,0);
+    collorAttribute.setXYZ(z,250,0,0);
+    collorAttribute.needsUpdate = true;
+
+    // //debugger;
+    label.textContent = `this is panel ${firstCollision}`;
+    const location = previousSelection.location;
+  
+    if(lableArray.length > 1){
+      console.log(lableArray);
+      labelObject.position.copy(location);
+      const currentLabel=lableArray[(lableArray.length-1)];
+      currentLabel.position.copy(location);
+      scene.add(currentLabel);
     }
+    
+    
   });
 
   //the renderer
 
   const renderer = new WebGLRenderer({ canvas: canvas });
 
+
   renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+  // renderer.setSize(window.screen.width,window.screen.height, false);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0xffffff, 1);
   //renderer.render(scene,camera);
@@ -32636,12 +32909,27 @@ function customMesh(canvas, guiCont) {
 
   cameraControls.dollyToCursor = true;
 
+  const labelRenderer= new CSS2DRenderer();
+  
+  labelRenderer.setSize(canvas.clientWidth,canvas.clientHeight);
+  labelRenderer.domElement.style.position = 'absolute';
+  labelRenderer.domElement.style.pointerEvents = 'none' ;
+  labelRenderer.domElement.style.top = '0';
+
+  document.body.appendChild(labelRenderer.domElement);
+
+
+
+  // pickint
+
+
   //animtation
 
   const animate = () => {
     const detla = clock.getDelta();
     cameraControls.update(detla);
     renderer.render(scene, camera);
+    labelRenderer.render(scene,camera);
     requestAnimationFrame(animate);
   };
 
@@ -32651,6 +32939,7 @@ function customMesh(canvas, guiCont) {
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+    labelRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
   });
 }
 
@@ -32667,10 +32956,15 @@ const rightbar = document.createElement("div");
 rightbar.className = "rightbar";
 
 const viewer = document.createElement("div");
+const totalHeight = window.screen.height;
+const totalWidth = window.screen.width;
+console.log(totalHeight);
+console.log(totalWidth);
 viewer.className = "viewer";
+viewer.style.height = `${totalHeight} + px`;
 
-const divs = [header, appcontainer];
-const appelements = [viewer, rightbar];
+const divs = [appcontainer];
+const appelements = [viewer];
 
 for (let element of divs) {
   container.appendChild(element);
@@ -32683,7 +32977,7 @@ for (let element of appelements) {
 const title = document.createElement("h1");
 title.textContent = "GEOMETRY VIEWER 🔍";
 
-header.appendChild(title);
+//header.appendChild(title);
 
 // three.js canvas
 
@@ -32699,10 +32993,11 @@ rightbarTitle.textContent = "Element Information";
 const viewertitle = document.createElement("h3");
 viewertitle.textContent = "Geometry Analisis";
 
-viewer.appendChild(viewertitle);
+//viewer.appendChild(viewertitle);
 viewer.appendChild(canvas);
 viewer.appendChild(gui);
-rightbar.appendChild(rightbarTitle);
+
+//rightbar.appendChild(rightbarTitle);
 
 viewer.addEventListener("mouseenter", () => {
   rightbar.style.backgroundColor = "yellow";
@@ -32711,5 +33006,9 @@ viewer.addEventListener("mouseout", () => {
   rightbar.style.backgroundColor = "aqua";
 });
 
+//const headerHeight = document.querySelector('.header').offsetHeight;
+
+//console.log(headerHeight)
+
 gui.id = "three-gui";
-customMesh(canvas, gui);
+customMesh(canvas,gui);
