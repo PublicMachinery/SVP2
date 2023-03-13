@@ -32811,13 +32811,6 @@ function customMesh(canvas, guiCont) {
     location : null,
   };
 
-
-  // function onMouseMove(){
-  //   let firstCollision;
-  //   return function(event){
-  //     console.log(firstCollision)
-  //   }
-  // }
   let firstCollision;
 
   const collision = [];
@@ -32843,7 +32836,6 @@ function customMesh(canvas, guiCont) {
       geometry.setAttribute('color',new Float32BufferAttribute(flatColorArr,3));
       labelObject.removeFromParent;
       label.id = 'hidden-label';
-      //const labelPrev= (document.getElementsByClassName('label'));
       for(let l of lableArray){
         l.removeFromParent();
       }      lableArray.length =0;
@@ -32853,7 +32845,9 @@ function customMesh(canvas, guiCont) {
     collision.push(firstCollision);
     
     if(collision.length >1){
-      const isPrevious = firstCollision in collision; 
+      const isPrevious = firstCollision in collision;
+      
+      console.log(isPrevious);
       for(let l of lableArray){
         l.removeFromParent();
       }      if(!isPrevious){
@@ -32881,11 +32875,12 @@ function customMesh(canvas, guiCont) {
     const location = previousSelection.location;
   
     if(lableArray.length > 1){
-      console.log(lableArray);
       labelObject.position.copy(location);
+      const previousLabel= lableArray[(lableArray.length-2)];
       const currentLabel=lableArray[(lableArray.length-1)];
       currentLabel.position.copy(location);
       scene.add(currentLabel);
+      previousLabel.removeFromParent();
     }
     
     
