@@ -73,6 +73,8 @@ import {
   CSS2DObject,
 } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 
+
+
 export function customMesh(canvas, guiCont) {
   // Scene
 
@@ -85,6 +87,19 @@ export function customMesh(canvas, guiCont) {
 
   //  Reading from JSON
 
+  console.log(pointLoader())
+
+  async function pointLoader(){
+    console.log('awaited');
+    const points = await pointsAwaited;
+    console.log(pointsAwaited)
+    //return (points)
+  }
+
+  function pointsAwaited(){
+    return pointsSorted;
+  }
+  
 
   const flatcoord = [].concat(...pointsSorted["points"]);
   const flatcoordsc = [];
@@ -115,6 +130,7 @@ export function customMesh(canvas, guiCont) {
   geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3));
   geometry.setAttribute("color", new Float32BufferAttribute(flatColorArr, 3));
 
+
   // the materials
 
   const material = new MeshBasicMaterial({
@@ -125,13 +141,20 @@ export function customMesh(canvas, guiCont) {
     vertexColors: true,
   });
 
+
+  function meshAdder(geometry,material){
+    const wireTriangle = new WireframeGeometry(geometry);
+    const wireframe = new LineSegments(wireTriangle, edgesMaterial);
+    const mesh =  new Mesh(geometry, material);
+    return mesh;
+  }
+
   const wireTriangle = new WireframeGeometry(geometry);
   const wireframe = new LineSegments(wireTriangle, edgesMaterial);
-  const mesh = new Mesh(geometry, material);
+  const mesh =  new Mesh(geometry, material);
   scene.add(mesh);
   scene.add(wireframe);
-
-
+ 
   // Helpers
 
   const axes = new AxesHelper(2);
@@ -281,14 +304,6 @@ export function customMesh(canvas, guiCont) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0xffffff, 1);
 
-  const loader = new BufferGeometryLoader();
-  const loadGeometry = geometry.toJSON();
-  loader.parse(loadGeometry,(geometry) => {
-    const meshLoaded = new Mesh(bufferGeometry,material)
-    scene.add(meshLoaded);
-    console.log(meshLoaded);
-    renderer.render(scene, camera);
-  });
 
   //controls
 
@@ -322,6 +337,6 @@ export function customMesh(canvas, guiCont) {
     camera.updateProjectionMatrix();
     renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
     labelRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
-    
   });
+  
 }

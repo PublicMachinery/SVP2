@@ -1,4 +1,6 @@
+//import { resolve } from "mathjs";
 import { customMesh } from "./three.js";
+// import { customMesh } from "./three-async";
 
 // Main structure
 
@@ -13,13 +15,13 @@ const rightbar = document.createElement("div");
 rightbar.className = "rightbar";
 
 const viewer = document.createElement("div");
-const totalHeight = window.screen.height;
+const totalHeight = window.innerHeight || document.body.clientHeight;
+
 const totalWidth = window.screen.width;
-console.log(totalHeight)
-console.log(totalWidth)
+
 viewer.className = "viewer";
 viewer.style.height = `${totalHeight} + px`;
-
+document.scr
 const divs = [appcontainer];
 const appelements = [viewer];
 
@@ -34,12 +36,9 @@ for (let element of appelements) {
 const title = document.createElement("h1");
 title.textContent = "GEOMETRY VIEWER 🔍";
 
-//header.appendChild(title);
-
-// three.js canvas
-
 const canvas = document.createElement("canvas");
 canvas.id = "three-canvas";
+
 const gui = document.createElement("div");
 
 //  Spaces titles
@@ -63,17 +62,14 @@ viewer.addEventListener("mouseout", () => {
   rightbar.style.backgroundColor = "aqua";
 });
 
-//const headerHeight = document.querySelector('.header').offsetHeight;
-
-//console.log(headerHeight)
 
 gui.id = "three-gui";
+
 customMesh(canvas,gui);
 
-function loaded() {
-  canvas.style.width = "auto";
-  const height = window.innerHeight;
-  canvas.style.height = `${height * 0.9}px`;
-}
+const canvasSel= document.getElementById('three-canvas');
+canvasSel.height=totalHeight;
+
+
 
 
