@@ -3,7 +3,7 @@
     font-family: Arial, Helvetica, sans-serif;
 }
 body{
-    margin-top: 0;
+    margin: 0;
 }
 
 h1 {
@@ -44,6 +44,7 @@ h1 {
     display: flex;
     flex-direction: row;
     border: 2px solid gray;
+    
 }
 
 h3  {
@@ -54,6 +55,7 @@ h3  {
     margin: 0;
     
 }
+
 .label{
     background-color: #00000049;
     margin-left: 4rem;
@@ -67,29 +69,35 @@ h3  {
     flex-direction: column;
     position:relative;
     width: 100%;
-    border-right: 2px solid gray;
     background-color: rgba(255, 255, 255, 0);
-    display: flex;      
+    display: flex;
 }
 
 #three-canvas{
-    height: auto;
-    position :relative;
-    width: 100%;
-    display: flex;
     
+    width: 100%;
+    display: block;
+    /*height: 100%;*/
 }
 
 #three-gui{
     position: absolute;
     right: 0;
     width: 50%;
-    
 }
 
-.rightbar {
+
+.rightbar-hidden{
+    display: none;
+}
+
+#rightbar-view {
+    display: block;
+    position: absolute;
     flex-direction: column;
-    background-color: aqua;
+    background-color: rgba(0, 0, 0, 0.225);
+    width: 33%;
+    height: 90%;
     
     /*height: 100%;*/
 }

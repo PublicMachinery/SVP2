@@ -12,7 +12,7 @@ const appcontainer = document.createElement("div");
 appcontainer.className = "appcontainer";
 
 const rightbar = document.createElement("div");
-rightbar.className = "rightbar";
+rightbar.className = "rightbar-hidden";
 
 const viewer = document.createElement("div");
 const totalHeight = window.innerHeight || document.body.clientHeight;
@@ -21,8 +21,8 @@ const totalWidth = window.screen.width;
 
 viewer.className = "viewer";
 viewer.style.height = `${totalHeight} + px`;
-document.scr
-const divs = [appcontainer];
+
+const divs = [header,appcontainer,rightbar];
 const appelements = [viewer];
 
 for (let element of divs) {
@@ -40,6 +40,7 @@ const canvas = document.createElement("canvas");
 canvas.id = "three-canvas";
 
 const gui = document.createElement("div");
+header.append(title)
 
 //  Spaces titles
 
@@ -55,20 +56,19 @@ viewer.appendChild(gui);
 
 //rightbar.appendChild(rightbarTitle);
 
-viewer.addEventListener("mouseenter", () => {
-  rightbar.style.backgroundColor = "yellow";
-});
-viewer.addEventListener("mouseout", () => {
-  rightbar.style.backgroundColor = "aqua";
-});
+// viewer.addEventListener("mouseenter", () => {
+//   rightbar.style.backgroundColor = "yellow";
+// });
+// viewer.addEventListener("mouseout", () => {
+//   rightbar.style.backgroundColor = "aqua";
+// });
 
 
 gui.id = "three-gui";
 
 customMesh(canvas,gui);
 
-const canvasSel= document.getElementById('three-canvas');
-canvasSel.height=totalHeight;
+// const canvasSel= document.getElementById('three-canvas');
 
 
 

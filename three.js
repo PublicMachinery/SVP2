@@ -74,92 +74,27 @@ import {
 } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 
 export function customMesh(canvas, guiCont) {
+ 
   // Scene
 
   const scene = new Scene();
   scene.background = null;
 
-  const edgesMaterial = new LineBasicMaterial({
-    color: 0x000000,
-  });
+  
 
-  //  Reading from JSON
-
-
-  const flatcoord = [].concat(...pointsSorted["points"]);
-  const flatcoordsc = [];
-
-  for (let v of flatcoord) {
-    const sclcrd = v * 0.0001;
-    flatcoordsc.push(sclcrd);
-  }
-
-  const indexes = indexesSorted["indexes"];
-
-  const colorArray = [];
-
-  for (let c in indexes) {
-    const color = [85, 213, 83];
-    colorArray.push(color);
-  }
-
-  // Arrays
-  const flatColorArr = new Float32Array([].concat(...colorArray));
-
-  const vertices = new Float32Array(flatcoordsc);
-
-  // Geometry
-
-  const geometry = new BufferGeometry();
-
-  geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3));
-  geometry.setAttribute("color", new Float32BufferAttribute(flatColorArr, 3));
-
-  // the materials
-
-  const material = new MeshBasicMaterial({
-    polygonOffset: true,
-    polygonOffsetFactor: 1,
-    polygonOffsetUnits: 1,
-    side: 2,
-    vertexColors: true,
-  });
-
-  const wireTriangle = new WireframeGeometry(geometry);
-  const wireframe = new LineSegments(wireTriangle, edgesMaterial);
-  const mesh = new Mesh(geometry, material);
-  scene.add(mesh);
-  scene.add(wireframe);
-
-
+ 
   // Helpers
 
-  const axes = new AxesHelper(2);
+  const axes = new AxesHelper(1);
   axes.material.depthTest = true;
   const grid = new GridHelper();
   grid.material.depthTest = true;
-  grid.renderOrder = 2;
+  axes.renderOrder = 1;
+  grid.renderOrder = 1;
   scene.add(axes);
   scene.add(grid);
 
-  // GUI
-
-  const gui = new GUI({ autoPlace: false });
-  const min = -3;
-  const max = 3;
-  const step = 0.001;
-  gui.width = 800;
-  gui.domElement.id = "three-gui";
-  guiCont.append(gui.domElement);
-
-  const colorParam = {
-    color: 0xff0000,
-  };
-
-  gui.add(mesh.position, "x", min, max, step);
-  gui.addColor(colorParam, "color").onChange(() => {
-    mesh.material.color.set(colorParam.color);
-  });
+  
 
   // lights
 
@@ -176,13 +111,86 @@ export function customMesh(canvas, guiCont) {
 
   const camera = new PerspectiveCamera(
     50,
-    canvas.clientWith / canvas.clientHeight
+    canvas.clientWidth / canvas.clientHeight
   );
   camera.position.z = 3;
   camera.position.y = 3;
   camera.position.x = 3;
   camera.lookAt(new Vector3(0, 0, 0));
   scene.add(camera);
+
+
+ //  Reading from JSON
+
+
+ const flatcoord = [].concat(...pointsSorted["points"]);
+ const flatcoordsc = [];
+
+ for (let v of flatcoord) {
+   const sclcrd = v * 0.0001;
+   flatcoordsc.push(sclcrd);
+ }
+
+ const indexes = indexesSorted["indexes"];
+
+ const colorArray = [];
+
+ for (let c in indexes) {
+   const color = [85, 213, 83];
+   colorArray.push(color);
+ }
+
+ // Arrays
+ const flatColorArr = new Float32Array([].concat(...colorArray));
+
+ const vertices = new Float32Array(flatcoordsc);
+
+ // Geometry
+
+ const geometry = new BufferGeometry();
+
+ geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3));
+ geometry.setAttribute("color", new Float32BufferAttribute(flatColorArr, 3));
+
+ // the materials
+
+ const edgesMaterial = new LineBasicMaterial({
+   color: 0x000000,
+ });
+
+ const material = new MeshBasicMaterial({
+   polygonOffset: true,
+   polygonOffsetFactor: 1,
+   polygonOffsetUnits: 1,
+   side: 2,
+   vertexColors: true,
+ });
+
+ const wireTriangle = new WireframeGeometry(geometry);
+ const wireframe = new LineSegments(wireTriangle, edgesMaterial);
+ const mesh = new Mesh(geometry, material);
+ scene.add(mesh);
+ scene.add(wireframe);
+
+
+// GUI
+
+const gui = new GUI({ autoPlace: false });
+const min = -3;
+const max = 3;
+const step = 0.001;
+gui.width = 800;
+gui.domElement.id = "three-gui";
+guiCont.append(gui.domElement);
+
+const colorParam = {
+  color: 0xff0000,
+};
+
+gui.add(mesh.position, "x", min, max, step);
+gui.addColor(colorParam, "color").onChange(() => {
+  mesh.material.color.set(colorParam.color);
+});
 
   // Raycaster picking
 
@@ -200,11 +208,16 @@ export function customMesh(canvas, guiCont) {
   const collision = [];
   const lableArray = [];
 
-  window.addEventListener("mousemove", (event) => {
-    mouse.x = (event.clientX / canvas.clientWidth) * 2 - 1;
-    mouse.y = -(event.clientY / canvas.clientHeight) * 2 + 1;
-    rayCaster.setFromCamera(mouse, camera);
+  const canvasWrapper = document.getElementById( "three-canvas");
 
+  
+
+  canvas.addEventListener('mousemove', (event) => {
+    mouse.x = (event.layerX / canvas.clientWidth) * 2 - 1;
+    mouse.y = -(event.layerY / canvas.clientHeight) * 2 + 1;
+    rayCaster.setFromCamera(mouse, camera);
+    
+    
     const intersects = rayCaster.intersectObject(mesh);
     const hasCollided = intersects.length !== 0;
 
@@ -232,17 +245,17 @@ export function customMesh(canvas, guiCont) {
 
     if (collision.length > 1) {
       const isPrevious = firstCollision in collision;
-
+      
       for (let l of lableArray) {
         l.removeFromParent();
       }
       if (!isPrevious) {
         geometry.setAttribute(
-          "color",
-          new Float32BufferAttribute(flatColorArr, 3)
+          "color", new Float32BufferAttribute(flatColorArr, 3)
         );
       }
       collision.length = 0;
+      
     }
 
     previousSelection.location = intersects[0].point;
@@ -258,7 +271,7 @@ export function customMesh(canvas, guiCont) {
     collorAttribute.setXYZ(z, 250, 0, 0);
     collorAttribute.needsUpdate = true;
 
-    // //debugger;
+   
     
     label.textContent = `this is panel ${firstCollision}`;
     const location = previousSelection.location;
@@ -271,24 +284,26 @@ export function customMesh(canvas, guiCont) {
       scene.add(currentLabel);
       previousLabel.removeFromParent();
     }
+
+    
   });
+  canvas.addEventListener('dblclick',()=>{
+    const rightbar = document.getElementsByClassName('rightbar-hidden');
+    rightbar[0].className ='none';
+    rightbar.id = 'rightbar-view';
+    
+  })
 
   //the renderer
 
-  const renderer = new WebGLRenderer({ canvas: canvas });
-
+  const renderer = new WebGLRenderer({ canvas });
+  
+  renderer.setClearColor(0xffffff, 1);
   renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setClearColor(0xffffff, 1);
-
-  const loader = new BufferGeometryLoader();
-  const loadGeometry = geometry.toJSON();
-  loader.parse(loadGeometry,(geometry) => {
-    const meshLoaded = new Mesh(bufferGeometry,material)
-    scene.add(meshLoaded);
-    console.log(meshLoaded);
-    renderer.render(scene, camera);
-  });
+  renderer.render(scene, camera);
+  console.log(renderer.info)
+ 
 
   //controls
 
@@ -307,21 +322,30 @@ export function customMesh(canvas, guiCont) {
   document.body.appendChild(labelRenderer.domElement);
 
   //animtation
-
+  
+  console.log(canvas.clientHeight)
   const animate = () => {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
     const detla = clock.getDelta();
     cameraControls.update(detla);
     labelRenderer.render(scene, camera);
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+    console.log(canvas.clientHeight)
+    
   };
-
+  
   animate();
+
+  
   window.addEventListener("resize", () => {
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
     labelRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
-    
+    //renderer.render(scene, camera);
   });
+  
+
+
+  
 }
