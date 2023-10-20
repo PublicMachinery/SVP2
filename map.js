@@ -1,9 +1,11 @@
 
 import {mapPolygons} from './mapPolygons.js';
-const testPolygons=(mapPolygons.features[0].geometry.coordinates)
-// console.log(testPolygons[0][0])
+import { mapLines } from './mapPolygons.js';
 
+console.log(mapPolygons)
+console.log(mapLines)
 
+//const testPolygons=(mapPolygons.features[0].geometry.coordinates)
 mapboxgl.accessToken = 'pk.eyJ1IjoidG9tYXNtZW5hIiwiYSI6ImNsbXlqZjY0bjEzZGYyamxpOHBwMGxqczMifQ.y8mLdsITvhs0VkXdZXxx0Q';
 const map = new mapboxgl.Map({
 container: 'map',
@@ -16,9 +18,9 @@ zoom: 6
  // starting zoom
 });
 
-for (let coord of testPolygons){
-    console.log(coord)
-}
+// for (let coord of testPolygons){
+//     console.log(coord)
+// }
 
 const geojson = {
     type:'FeatureCollection',
@@ -35,17 +37,19 @@ const geojson = {
         }]
     };
 map.on('load',()=>{
-    map.addSource(
-        'testPol',{
-            type:'geojson',
-            data:mapPolygons
-            }
-        )               
-        // Add a new layer to visualize the polygon.
+    
+    for(let pol of mapPolygons){
+        let srcName= `testPol${mapPolygons.indexOf(pol)}`; 
+        map.addSource(
+            `${srcName}`,{
+                type:'geojson',
+                data:pol
+                }
+            )
         map.addLayer({
-        'id': 'testPol',
+        'id': `${srcName}`,
         'type': 'fill',
-        'source': 'testPol', // reference the data source
+        'source': `${srcName}`, // reference the data source
         'layout': {},
         'paint': {
         'fill-color': '#FF0000', // blue color fill
@@ -56,13 +60,41 @@ map.on('load',()=>{
         map.addLayer({
         'id': 'outline',
         'type': 'line',
-        'source': 'testPol',
+        'source': `${srcName}`,
         'layout': {},
         'paint': {
         'line-color': '#000',
         'line-width': 2
         }
-    });
+    });    
+    };
+
+    for(let line of mapLines){
+        let lineSrcName=`line${mapLines.indexOf(line)}`;
+        
+        map.addSource(
+            `${lineSrcName}`,{
+                type:'geojson',
+                data:line
+                }
+            );
+        map.addLayer({
+            'id': `${lineSrcName}`,
+            'type': 'line',
+            'source': `${lineSrcName}`, // reference the data source
+            'layout': {},
+            'paint': {
+            'line-color': '#E1FF05', // blue color fill
+            'line-width': 3,
+            'line-dasharray':[1,2]},
+                
+        });
+
+    
+    };
+                  
+        // Add a new layer to visualize the polygon.
+    
 });
 
 for (let feature of geojson.features){
