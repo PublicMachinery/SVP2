@@ -31,8 +31,8 @@ const colors={
     lines:{
         '180kmboundary':'#0000FF',
         'Arcticline_':'cyan',
-        'Railway':'magenta',
-        'Cultivationboarder':'yellow',       
+        'Railway':'#00001B',
+        'Cultivationboarder':'#7D7301',       
     },
     polygons:{
         'Intactforest':'white',
@@ -153,7 +153,7 @@ map.on('load',()=>{
             'layout': {},
             'paint': {
             'line-color': color, // blue color fill
-            'line-width': 4,
+            'line-width': 5,
             'line-dasharray':[1,2]},
                 
         });};
@@ -185,7 +185,7 @@ map.on('load',()=>{
             'layout': {},
             'paint': {
             'line-color': color, // blue color fill
-            'line-width':1,
+            'line-width':4.5,
             },
                 
         })};    
@@ -206,8 +206,8 @@ map.on('load',()=>{
             'source': `${lineSrcName}`, // reference the data source
             'layout': {},
             'paint': {
-            'line-color': color, // blue color fill
-            'line-width':0.5,
+            'line-color': 'blue', // blue color fill
+            'line-width':1,
             // 'line-dasharray':[1,2]
         }
     });};
