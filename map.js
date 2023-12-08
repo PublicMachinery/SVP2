@@ -29,7 +29,7 @@ const colors={
         'Cesar':'yellow'
     },
     lines:{
-        '180kmboundary':'gray',
+        '180kmboundary':'#0000FF',
         'Arcticline_':'cyan',
         'Railway':'magenta',
         'Cultivationboarder':'yellow',       
@@ -46,7 +46,7 @@ const geojson = {
         type: 'Feature',
         geometry: {
             type:'Point',
-            coordinates:[18.570945,66.974733]
+            coordinates:[18.583210,66.976418]
             },
             properties:{
             title:'Tjamotis Damm',
@@ -54,9 +54,6 @@ const geojson = {
             }           
         }]
     };
-
-
-
 
 map.on('load',()=>{
     
@@ -236,8 +233,8 @@ map.on('load',()=>{
             'source': pointTrName, // reference the data source
             'layout': {},
             'paint': {
-                'circle-radius': 5,
-                'circle-color': '#FF0000',
+                'circle-radius': 7.2,
+                'circle-color': '#B10425',
                 },
             
             
@@ -268,14 +265,15 @@ map.on('load',()=>{
         // Add a new layer to visualize the polygon.
 });
 
-// for (let feature of geojson.features){
-//     const el= document.createElement('div');
-//     el.className='marker';
-//     new mapboxgl.Marker(el)
-//     .setLngLat(feature.geometry.coordinates)
-//     .setPopup(new mapboxgl.Popup({offset: 25})
-//     .setHTML(`<h3>${feature.properties.title} </h3><p> ${feature.properties.description}</p>`).setMaxWidth('800'))
-//     .addTo(map);
-// };  
+
+for (let feature of geojson.features){
+    const el= document.createElement('div');
+    el.className='marker';
+    new mapboxgl.Marker(el)
+    .setLngLat(feature.geometry.coordinates)
+    .setPopup(new mapboxgl.Popup({offset: 25})
+    .setHTML(`<h3>${feature.properties.title} </h3><p> ${feature.properties.description}</p>`).setMaxWidth('600'))
+    .addTo(map);
+};  
 
 
