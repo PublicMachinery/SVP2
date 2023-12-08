@@ -35,7 +35,7 @@ const colors={
         'Cultivationboarder':'yellow',       
     },
     polygons:{
-        'Intactforest':'gray',
+        'Intactforest':'white',
         'Military':'blue',
         'Aram':'magenta'
     }
@@ -106,7 +106,7 @@ map.on('load',()=>{
         'layout': {},
         'paint': {
         'fill-color': color, // blue color fill
-        'fill-opacity': 0.5
+        'fill-opacity': 0.7
         }
         });
         // Add a black outline around the polygon.
@@ -233,12 +233,24 @@ map.on('load',()=>{
             'source': pointTrName, // reference the data source
             'layout': {},
             'paint': {
-                'circle-radius': 7.2,
+                'circle-radius': 13,
+                'circle-color': 'black',
+                },   
+            }
+        );
+        map.addLayer({
+            'id': `${pointTrName}`+'_',
+            'type': 'circle',
+            'source': pointTrName, // reference the data source
+            'layout': {},
+            'paint': {
+                'circle-radius': 8,
                 'circle-color': '#B10425',
-                },
-            
-            
-        });};
+                },   
+            }
+        );
+        
+    };
     
     for(let pt of mapPoints){
         let lineSrcName=`pointsTrip${mapPoints.indexOf(pt)}`;
