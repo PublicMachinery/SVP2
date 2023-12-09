@@ -50,7 +50,7 @@ const geojson = {
             },
             properties:{
             title:'Tjamotis Damm',
-            description:'<iframe src="https://speckle.xyz/embed?stream=521b67e98f&transparent=true&autoload=true&hidecontrols=true&noscroll=true&hidesidebar=true&hideselectioninfo=true" width="400" height="400" frameborder="0"></iframe>'
+            description:'<iframe src="https://speckle.xyz/embed?stream=521b67e98f&transparent=true&autoload=true&hidecontrols=true&noscroll=true&hidesidebar=true&hideselectioninfo=true" width="300" height="300" frameborder="0"></iframe>'
             }           
         }]
     };
